@@ -53,9 +53,26 @@ impl UserService {
                 message: e.to_string(),
             }),
         };
-        
+
         transaction.commit().await?;
-        
+
         result
+    }
+
+    pub async fn user_list(&self, limit: u16, page: u32) -> Result<Vec<User>, AppError> {
+        let rows = sqlx::query("SELECT id, username FROM users ORDER BY id LIMIT $1 OFFSET $2")
+            .bind(limit as i32)
+            .bind(((page - 1) as i32 * limit as i32) as i64)
+            .fetch_all(&*self.db_pool)
+            .await?;
+
+        rows.iter()
+            .map(|row| {
+                let id = row.try_get("id")?;
+                let username = row.try_get("username")?;
+                Ok(User { id, username })
+            })
+            .into_iter()
+            .collect()
     }
 }
