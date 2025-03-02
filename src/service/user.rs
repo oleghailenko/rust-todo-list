@@ -1,6 +1,6 @@
-use crate::model::user::{CreateUserRequest, User};
+use crate::model::user::{CreateUserRequest, User, UserResponse};
 use crate::service::AppError;
-use crate::service::Error::{AlreadyExists, InternalError};
+use crate::service::Error::{AlreadyExists, InternalError, NotFound};
 use rocket::futures::TryStreamExt;
 use sqlx::{PgPool, Row};
 use std::sync::Arc;
@@ -14,7 +14,7 @@ impl UserService {
         Self { db_pool }
     }
 
-    pub async fn get_user_by_username(&self, username: &str) -> Result<Option<User>, AppError> {
+    pub async fn find_user_by_username(&self, username: &str) -> Result<Option<User>, AppError> {
         let mut rows = sqlx::query("SELECT id, username FROM users WHERE username = $1")
             .bind(username)
             .fetch(&*self.db_pool);
@@ -30,10 +30,34 @@ impl UserService {
         }
     }
 
+    pub async fn get_user_by_username(&self, username: &str) -> Result<UserResponse, AppError> {
+        let user = self.find_user_by_username(username).await?;
+        match user {
+            None => Err(AppError {
+                error: NotFound,
+                message: format!("User {} not found", username),
+            }),
+            Some(u) => {
+                let stats = sqlx::query("SELECT count(*) FROM lists WHERE user_id = $1")
+                    .bind(u.id)
+                    .fetch_one(&*self.db_pool)
+                    .await?;
+                let list_count: i64 = stats.try_get(0)?;
+                Ok(UserResponse {
+                    id: u.id,
+                    username: u.username,
+                    lists: list_count as i32,
+                    items: 0,
+                    done: 0,
+                })
+            }
+        }
+    }
+
     pub async fn create_user(&self, request: &CreateUserRequest) -> Result<i64, AppError> {
         let transaction = self.db_pool.begin().await?;
 
-        let user = self.get_user_by_username(&request.username).await?;
+        let user = self.find_user_by_username(&request.username).await?;
         if let Some(_) = user {
             return Err(AppError {
                 error: AlreadyExists,

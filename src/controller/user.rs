@@ -1,4 +1,4 @@
-use crate::model::user::{CreateUserRequest, User};
+use crate::model::user::{CreateUserRequest, User, UserResponse};
 use crate::service::user::UserService;
 use crate::service::AppError;
 use rocket::fairing::AdHoc;
@@ -32,8 +32,17 @@ async fn create_user(
     }))
 }
 
+#[get("/<username>")]
+async fn get_user_by_username(
+    username: &str,
+    user_service: &State<UserService>
+) -> Result<Json<UserResponse>, AppError> {
+    let user = user_service.get_user_by_username(username).await?;
+    Ok(Json(user))
+}
+
 pub fn stage() -> AdHoc {
     AdHoc::on_ignite("user", |rocket| async {
-        rocket.mount("/user", routes![user_list, create_user])
+        rocket.mount("/user", routes![user_list, create_user, get_user_by_username])
     })
 }

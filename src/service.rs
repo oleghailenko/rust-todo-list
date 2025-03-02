@@ -7,10 +7,12 @@ use serde_json::json;
 use crate::service::Error::InternalError;
 
 pub mod user;
+pub mod list;
 
 #[derive(Debug)]
 pub enum Error {
     AlreadyExists,
+    NotFound,
     InternalError,
 }
 
@@ -41,6 +43,7 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for AppError {
     fn respond_to(self, _request: &'r Request<'_>) -> rocket::response::Result<'o> {
         let status = match self.error {
             Error::AlreadyExists => Status::Conflict,
+            Error::NotFound => Status::NotFound,
             _ => Status::InternalServerError,
         };
 

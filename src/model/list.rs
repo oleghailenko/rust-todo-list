@@ -2,29 +2,28 @@ use rocket::serde::{Serialize, Deserialize};
 
 #[derive(Debug, Deserialize)]
 #[serde(crate = "rocket::serde")]
-pub struct CreateUserRequest {
-    pub username: String
+pub struct CreateListRequest {
+    pub name: String
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
-pub struct User {
+pub struct List {
     pub id: i64,
-    pub username: String
+    pub name: String
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
-pub struct UserListResponse {
-    pub users: Vec<User>
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(crate = "rocket::serde")]
-pub struct UserResponse {
+pub struct ListResponse {
     pub id: i64,
-    pub username: String,
-    pub lists: i32,
-    pub items: i32,
-    pub done: i32
+    pub name: String,
+    pub total_items: i32,
+    pub done_items: i32
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+pub struct ListListResponse {
+    pub lists: Vec<ListResponse>,
 }
