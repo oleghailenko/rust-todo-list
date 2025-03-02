@@ -3,6 +3,7 @@ extern crate rocket;
 
 use crate::service::user::UserService;
 use std::sync::Arc;
+use crate::service::item::ItemService;
 use crate::service::list::ListService;
 
 mod settings;
@@ -34,10 +35,13 @@ async fn rocket() -> _ {
     };
     let user_service = UserService::new(Arc::clone(&db_pool));
     let list_service = ListService::new(Arc::clone(&db_pool));
+    let item_service = ItemService::new(Arc::clone(&db_pool));
     rocket::build()
         .manage(user_service)
         .manage(list_service)
+        .manage(item_service)
         .mount("/", routes![index])
         .attach(controller::user::stage())
         .attach(controller::list::stage())
+        .attach(controller::item::stage())
 }

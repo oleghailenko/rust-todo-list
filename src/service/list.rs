@@ -33,7 +33,7 @@ pub struct ListService {
                 let id: i64 = row.try_get("id")?;
                 let name = row.try_get("name")?;
                 Ok(ListResponse {
-                    id: id,
+                    id,
                     name,
                     total_items: 0,
                     done_items: 0,

@@ -8,6 +8,7 @@ use crate::service::Error::InternalError;
 
 pub mod user;
 pub mod list;
+pub mod item;
 
 #[derive(Debug)]
 pub enum Error {
