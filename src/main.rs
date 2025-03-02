@@ -1,7 +1,14 @@
 #[macro_use]
 extern crate rocket;
+
+use crate::service::user::UserService;
+use std::sync::Arc;
+
 mod settings;
 mod db;
+mod model;
+mod service;
+mod controller;
 
 #[get("/")]
 fn index() -> String {
@@ -17,7 +24,6 @@ async fn rocket() -> _ {
             std::process::exit(1);
         }
     };
-    println!("{:#?}", settings);
     let db_pool = match db::init(&settings.db).await {
         Ok(db) => db,
         Err(e) => {
@@ -25,9 +31,9 @@ async fn rocket() -> _ {
             std::process::exit(1);
         }
     };
-    let result = sqlx::query("SELECT 1")
-        .fetch_one(&db_pool)
-        .await;
-    println!("{:#?}", result);
-    rocket::build().mount("/", routes![index])
+    let user_service = UserService::new(Arc::clone(&db_pool));
+    rocket::build()
+        .manage(user_service)
+        .mount("/", routes![index])
+        .attach(controller::user::stage())
 }

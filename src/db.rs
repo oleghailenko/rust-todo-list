@@ -2,8 +2,9 @@ use crate::settings::DBSettings;
 use sqlx::postgres::PgConnectOptions;
 use sqlx::PgPool;
 use std::error::Error;
+use std::sync::Arc;
 
-pub async fn init(s: &DBSettings) -> Result<PgPool, Box<dyn Error>> {
+pub async fn init(s: &DBSettings) -> Result<Arc<PgPool>, Box<dyn Error>> {
     let options = PgConnectOptions::new()
         .host(&s.host)
         .port(s.port)
@@ -15,8 +16,9 @@ pub async fn init(s: &DBSettings) -> Result<PgPool, Box<dyn Error>> {
         Err(e) => Err(Box::new(e)),
     };
     if let Ok(db) = &pool {
+        info!("Executing migrations");
         sqlx::migrate!("./migrations").run(db).await?;
     }
     
-    Ok(pool?)
+    Ok(Arc::new(pool?))
 }

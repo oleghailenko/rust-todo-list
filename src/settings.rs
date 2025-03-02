@@ -3,6 +3,8 @@ use serde_derive::Deserialize;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::{env, fmt};
+use log::LevelFilter;
+use simple_logger::SimpleLogger;
 
 #[derive(Debug)]
 struct ConfigError(String);
@@ -33,6 +35,7 @@ pub struct DBSettings {
 }
 
 pub fn init() -> Result<Settings, Box<dyn Error>> {
+    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
     let mut config_builder = Config::builder();
     config_builder = config_builder
         .add_source(File::new("config/default", config::FileFormat::Toml).required(false));
