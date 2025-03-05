@@ -1,0 +1,427 @@
+openapi: 3.0.3
+info:
+  title: Todo list - OpenAPI 3.0
+  description: |-
+  version: 0.0.2
+#servers:
+#  - url: https://petstore3.swagger.io/api/v3
+paths:
+  /user:
+    post:
+      summary: Create User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+        required: true
+      responses:
+        200:
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+  /user/{username}:
+    get:
+      summary: Get user by username
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+  /user/{username}/list:
+    get:
+      summary: Get all user's lists
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 10
+            format: i32
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 1
+            format: i32
+      responses:
+        200:
+          description: Lists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListsResponse'
+    post:
+      summary: Create new list
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateListRequest'
+      responses:
+        200:
+          description: Created list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+  /user/{username}/list/{listId}:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: number
+          format: i64
+    get:
+      summary: Get list by id
+      responses:
+        200:
+          description: List
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+    put:
+      summary: Update list
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateListRequest'
+      responses:
+        200:
+          description: List
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+    delete:
+      summary: Delete list. You can delete list only if there is no pending items
+      responses:
+        204:
+          description: List deleted
+  /user/{username}/list/{listId}/items:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: number
+          format: i64
+    get:
+      summary: Get list items
+      responses:
+        200:
+          description: List of items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemsResponse'
+    post:
+      summary: Create new item
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateItemRequest'
+      responses:
+        200:
+          description: Created item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+  /user/{username}/list/{listId}/items/{itemId}:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: number
+          format: i64
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: number
+          format: i64
+    get:
+      summary: Get item
+      responses:
+        200:
+          description: Item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+    put:
+      summary: Update item
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemRequest'
+      responses:
+        200:
+          description: Updated item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+    delete:
+      summary: Delete item
+      responses:
+        204:
+          description: Item removed
+  /user/{username}/list/{listId}/items/{itemId}/move/{otherListId}:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: number
+          format: i64
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: number
+          format: i64
+      - name: otherListId
+        in: path
+        required: true
+        schema:
+          type: number
+          format: i64
+    put:
+      summary: Move item to another list
+      responses:
+        200:
+          description: Item moved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+
+
+
+components:
+  schemas:
+    CreateUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: user
+        password:
+          type: string
+          example: password
+        name:
+          type: string
+          example: John Dow
+        email:
+          type: string
+          format: email
+      required:
+        - username
+        - password
+        - name
+        - email
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: number
+          format: i64
+        username:
+          type: string
+          example: user
+        name:
+          type: string
+          example: John Dow
+        email:
+          type: string
+          format: email
+        numberOfLists:
+          type: number
+          format: i32
+    ListsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            properties:
+              id:
+                type: number
+                format: i64
+              name:
+                  type: string
+                  example: Shopping List
+            required:
+              - id
+              - name
+    ListResponse:
+      type: object
+      properties:
+        id:
+          type: number
+          format: i64
+        name:
+          type: string
+          example: Shopping List
+        description:
+          type: string
+          example: Products i need to buy
+        endDate:
+          type: string
+          format: date
+        numberOfItems:
+          type: number
+          format: i32
+        numberOfFinishedItems:
+          type: number
+          format: i32
+      required:
+        - id
+        - name
+        - description
+    CreateListRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Shopping List
+        description:
+          type: string
+          example: Products i need to buy
+        endDate:
+          type: string
+          format: date
+    UpdateListRequest:
+      type: object
+      properties:
+        id:
+          type: number
+          format: i64
+        name:
+          type: string
+          example: Shopping List
+        description:
+          type: string
+          example: Products i need to buy
+        endDate:
+          type: string
+          format: date
+      required:
+        - id
+        - name
+        - description
+    ItemsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            properties:
+              id:
+                type: number
+                format: i64
+              name:
+                type: string
+                example: Buy coffee
+              status:
+                type: string
+                enum:
+                  - WAITING
+                  - IN-PROGRESS
+                  - DONE
+            required:
+              - id
+              - name
+              - status
+    CreateItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+    ItemResponse:
+      type: object
+      properties:
+        id:
+          type: number
+          format: i64
+        name:
+          type: string
+          example: Buy coffee
+        status:
+          type: string
+          enum:
+            - WAITING
+            - IN-PROGRESS
+            - DONE
+      required:
+        - id
+        - name
+        - status
+    ItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Buy coffee
+        status:
+          type: string
+          enum:
+            - WAITING
+            - IN-PROGRESS
+            - DONE
+      required:
+        - name
+        - status
